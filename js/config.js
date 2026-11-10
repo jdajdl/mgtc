@@ -4,7 +4,7 @@ window.RALLYE = {
   titre: "Coupe MGTC – Journées superviseurs 2027",
 
   // À renseigner : adresse de votre Moodle (sans "/" final), ex. "https://moodle.exemple.fr"
-  moodleBase: "",
+  moodleBase: "http://88.170.235.196:8443/",
 
   equipes: ["A", "B", "C", "D", "E"],
 
