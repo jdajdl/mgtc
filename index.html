@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupe MGTC – Accueil</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div id="jours"></div>
+  <div class="card">
+    <h2 style="margin-top:0">Consignes pour tous</h2>
+    <ul id="consignes"></ul>
+  </div>
+  <p class="muted">Ce site ne contient que l'organisation du jeu. Les questions et les corrigés sont dans Moodle (connexion requise).</p>
+</main>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  APP.layout("index.html");
+  const C = APP.C;
+  document.getElementById("consignes").innerHTML = C.consignes.map(c => "<li>" + c + "</li>").join("");
+  document.getElementById("jours").innerHTML = Object.keys(C.jours).map(j => {
+    const J = C.jours[j];
+    return '<div class="card"><h2 style="margin-top:0">' + J.titre + '</h2><div class="grid">' +
+      J.postes.map(p => '<a class="btn sec" href="poste.html?j=' + j + '&p=' + p.id + '">Poste ' + p.id + ' – ' + p.nom + '<br><span class="muted">' + p.lieu + '</span></a>').join("") +
+      '<a class="btn sec" href="poste.html?j=' + j + '&p=F">' + J.finale.nom + '</a></div></div>';
+  }).join("");
+</script>
+</body>
+</html>

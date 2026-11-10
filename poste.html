@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupe MGTC – Poste</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="m"></main>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  APP.layout("");
+  const C = APP.C, $ = APP.$;
+  const q = new URLSearchParams(location.search);
+  const j = q.get("j") || "1", p = q.get("p") || "1";
+  const J = C.jours[j];
+  const poste = p === "F" ? J && Object.assign({ id: "F", lieu: "Show-room ou atelier (toutes les équipes)" }, J.finale)
+                         : J && J.postes.find(x => String(x.id) === p);
+  const m = $("#m");
+  if (!poste) { m.innerHTML = '<div class="alert">Poste introuvable.</div>'; }
+  else {
+    const url = APP.moodleUrl(poste.moodle);
+    const duree = (p === "F" ? C.dureeFinale : C.dureePoste) * 60;
+    m.innerHTML =
+      '<span class="tag">' + J.titre + '</span>' +
+      '<h2 style="margin-top:8px">' + (p === "F" ? "" : "Poste " + poste.id + " – ") + poste.nom + '</h2>' +
+      '<p class="muted">Lieu : ' + poste.lieu + '</p>' +
+      '<div class="card"><p><b>Équipe :</b> <select id="eq">' + C.equipes.map(e => '<option>' + e + '</option>').join("") + '</select></p>' +
+      (url ? '<a class="btn" href="' + url + '">Ouvrir l\'activité dans Moodle</a>'
+           : '<div class="alert">Lien Moodle non configuré pour ce poste (voir <code>js/config.js</code>).</div>') + '</div>' +
+      '<div class="card"><div class="timer" id="t"></div><div style="text-align:center">' +
+        '<button id="go">Démarrer</button> <button class="sec" id="rz">Remise à zéro</button></div>' +
+        '<p class="muted" style="text-align:center">Le chronomètre sert à l\'organisation du poste. Aucun geste technique n\'est chronométré.</p></div>' +
+      '<div class="card"><b>Rappel sécurité</b><ul>' + C.consignes.map(c => '<li>' + c + '</li>').join("") + '</ul></div>';
+
+    $("#eq").value = APP.load("equipe", "A"); $("#eq").onchange = () => APP.save("equipe", $("#eq").value);
+    let reste = duree, iv = null;
+    const aff = () => { const t = $("#t"); t.textContent = String(Math.floor(Math.abs(reste) / 60)).padStart(2, "0") + ":" + String(Math.abs(reste) % 60).padStart(2, "0"); t.className = "timer" + (reste <= 0 ? " end" : ""); };
+    function bip() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(); o.connect(a.destination); o.frequency.value = 880; o.start(); o.stop(a.currentTime + 0.6); } catch (e) {} }
+    $("#go").onclick = () => {
+      if (iv) { clearInterval(iv); iv = null; $("#go").textContent = "Reprendre"; return; }
+      $("#go").textContent = "Pause";
+      iv = setInterval(() => { reste--; if (reste === 0) bip(); aff(); }, 1000);
+    };
+    $("#rz").onclick = () => { clearInterval(iv); iv = null; reste = duree; $("#go").textContent = "Démarrer"; aff(); };
+    aff();
+  }
+</script>
+</body>
+</html>

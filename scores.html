@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupe MGTC – Scores</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="card noproj">
+    Demi-journée : <select id="jour"></select>
+    &nbsp; <button class="sec" id="proj">Mode projection</button>
+    <button class="sec" id="csv">Exporter CSV</button>
+    <button class="sec" id="raz">Remettre à zéro</button>
+    <p class="muted" style="margin:8px 0 0">Les scores sont enregistrés uniquement sur cet appareil (tablette ou PC de l'animateur). Rien n'est envoyé sur internet.</p>
+  </div>
+  <div id="out"></div>
+</main>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  APP.layout("scores.html");
+  const C = APP.C, $ = APP.$;
+  $("#jour").innerHTML = Object.keys(C.jours).map(j => '<option value="' + j + '">' + C.jours[j].titre + '</option>').join("");
+  $("#jour").value = APP.load("sc_jour", "1");
+  const key = () => "scores_j" + $("#jour").value;
+
+  function totals(S, J) {
+    return C.equipes.map(e => {
+      const s = S[e] || {};
+      let t = 0; Object.keys(s).forEach(k => t += Number(s[k]) || 0);
+      return t;
+    });
+  }
+
+  function render() {
+    const j = $("#jour").value, J = C.jours[j], S = APP.load(key(), {});
+    APP.save("sc_jour", j);
+    const cols = J.postes.map(p => ({ k: "p" + p.id, t: "P" + p.id, max: C.pointsMaxPoste }))
+      .concat([{ k: "F", t: "Finale", max: C.pointsMaxFinale }, { k: "B", t: "Bonus", max: 99 }]);
+    const tot = totals(S, J);
+    const ordre = tot.map((t, i) => [t, i]).sort((a, b) => b[0] - a[0]);
+    const rang = {}; ordre.forEach((o, r) => rang[o[1]] = r + 1);
+
+    let html = '<table><tr><th>Rang</th><th class="l">Équipe</th>' + cols.map(c => '<th title="' + c.t + '">' + c.t + '</th>').join("") + '<th>Total</th></tr>';
+    C.equipes.forEach((e, i) => {
+      html += '<tr class="' + (rang[i] === 1 && tot[i] > 0 ? "rank1" : "") + '"><td>' + rang[i] + '</td><td class="l">Équipe ' + e + '</td>' +
+        cols.map(c => '<td><input type="number" min="0" max="' + c.max + '" data-e="' + e + '" data-k="' + c.k + '" value="' + ((S[e] || {})[c.k] ?? "") + '"></td>').join("") +
+        '<td><b>' + tot[i] + '</b></td></tr>';
+    });
+    html += '</table><p class="muted">P1 à P5 : max ' + C.pointsMaxPoste + ' pts par poste · Finale : max ' + C.pointsMaxFinale + ' pts (barème provisoire).</p>';
+    $("#out").innerHTML = html;
+    document.querySelectorAll("#out input").forEach(inp => inp.onchange = () => {
+      const S2 = APP.load(key(), {});
+      const e = inp.dataset.e, k = inp.dataset.k;
+      S2[e] = S2[e] || {};
+      if (inp.value === "") delete S2[e][k]; else S2[e][k] = Math.max(0, Math.min(Number(inp.max), Number(inp.value)));
+      APP.save(key(), S2); render();
+    });
+  }
+
+  $("#jour").onchange = render;
+  $("#proj").onclick = () => document.body.classList.toggle("proj");
+  $("#raz").onclick = () => { if (confirm("Effacer tous les scores de cette demi-journée ?")) { localStorage.removeItem(key()); render(); } };
+  $("#csv").onclick = () => {
+    const S = APP.load(key(), {}), J = C.jours[$("#jour").value];
+    const ks = J.postes.map(p => "p" + p.id).concat(["F", "B"]);
+    let out = "Equipe;" + ks.join(";") + ";Total\n";
+    C.equipes.forEach(e => { const s = S[e] || {}; let t = 0; ks.forEach(k => t += Number(s[k]) || 0); out += e + ";" + ks.map(k => s[k] ?? "").join(";") + ";" + t + "\n"; });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + out], { type: "text/csv" }));
+    a.download = "scores_demi-journee_" + $("#jour").value + ".csv"; a.click();
+  };
+  render();
+</script>
+</body>
+</html>

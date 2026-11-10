@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupe MGTC – QR codes</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="card noprint">
+    <p style="margin-top:0">Un QR code par poste, qui ouvre la fiche du poste sur ce site. À imprimer et à afficher à chaque poste.</p>
+    <button onclick="window.print()">Imprimer</button>
+    <p class="muted" style="margin-bottom:0">Les QR pointent vers l'adresse actuelle du site : ouvrez cette page depuis l'URL définitive (GitHub Pages) avant d'imprimer.</p>
+  </div>
+  <div id="out"></div>
+</main>
+<script src="vendor/qrcode.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  APP.layout("qr.html");
+  const C = APP.C;
+  const base = location.href.replace(/[^\/]*(\?.*)?(#.*)?$/, "");
+  function qr(text) { const q = qrcode(0, "M"); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
+  let html = "";
+  Object.keys(C.jours).forEach(j => {
+    const J = C.jours[j];
+    html += '<h2>' + J.titre + '</h2><div class="qrgrid">';
+    J.postes.concat([{ id: "F", nom: J.finale.nom, lieu: "" }]).forEach(p => {
+      const u = base + "poste.html?j=" + j + "&p=" + p.id;
+      html += '<div class="card qrcard">' + qr(u) + '<div><b>' + (p.id === "F" ? "" : "Poste " + p.id + " – ") + p.nom + '</b></div><div class="muted">Demi-journée ' + j + '</div></div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById("out").innerHTML = html;
+</script>
+</body>
+</html>

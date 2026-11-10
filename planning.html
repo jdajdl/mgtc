@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupe MGTC – Rotation</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="card noprint">
+    Demi-journée :
+    <select id="jour"></select>
+    &nbsp; Début du briefing : <input type="time" id="debut" value="08:30">
+    &nbsp; <button class="sec" onclick="window.print()">Imprimer</button>
+  </div>
+  <div id="out"></div>
+  <p class="muted">Chaque équipe passe une fois à chaque poste. Les horaires se recalculent à partir de l'heure de début et des durées définies dans <code>js/config.js</code>.</p>
+</main>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+  APP.layout("planning.html");
+  const C = APP.C, $ = APP.$;
+  $("#jour").innerHTML = Object.keys(C.jours).map(j => '<option value="' + j + '">' + C.jours[j].titre + '</option>').join("");
+  $("#jour").value = APP.load("pl_jour", "1");
+  $("#debut").value = APP.load("pl_debut", "08:30");
+
+  function render() {
+    const j = $("#jour").value, J = C.jours[j];
+    const [h, m] = $("#debut").value.split(":").map(Number);
+    APP.save("pl_jour", j); APP.save("pl_debut", $("#debut").value);
+    const s = APP.schedule(h * 60 + m), n = J.postes.length;
+    let html = '<h2>' + J.titre + '</h2>' +
+      '<div class="card">Briefing en salle : <b>' + APP.fmt(h * 60 + m) + ' – ' + APP.fmt(s.briefingFin) + '</b></div>' +
+      '<table><tr><th class="l">Manche</th><th>Horaire</th>' + C.equipes.map(e => '<th>Équipe ' + e + '</th>').join("") + '</tr>';
+    s.rounds.forEach(r => {
+      html += '<tr><td class="l">Manche ' + (r.r + 1) + '</td><td>' + APP.fmt(r.debut) + ' – ' + APP.fmt(r.fin) + '</td>' +
+        C.equipes.map((e, i) => {
+          const p = J.postes[APP.posteDe(i, r.r, n)];
+          return '<td><a href="poste.html?j=' + j + '&p=' + p.id + '">Poste ' + p.id + '</a><br><span class="muted">' + p.nom + '</span></td>';
+        }).join("") + '</tr>';
+      if (r.pauseApres) html += '<tr><td class="l" colspan="' + (2 + C.equipes.length) + '">Pause de ' + C.pause + ' min</td></tr>';
+    });
+    html += '<tr><td class="l">Finale</td><td>' + APP.fmt(s.finale.debut) + ' – ' + APP.fmt(s.finale.fin) + '</td><td colspan="' + C.equipes.length + '"><a href="poste.html?j=' + j + '&p=F">' + J.finale.nom + '</a> (toutes les équipes)</td></tr></table>';
+    $("#out").innerHTML = html;
+  }
+  $("#jour").onchange = render; $("#debut").onchange = render; render();
+</script>
+</body>
+</html>
