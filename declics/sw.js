@@ -2,7 +2,7 @@
    Portée limitée au dossier declics/ : le reste du site n'est pas concerné.
    Stratégie : réponse immédiate depuis le cache, mise à jour en arrière-plan.
    Pour forcer une mise à jour chez tout le monde, changer le numéro de version ci-dessous. */
-const VERSION = "declics-v1";
+const VERSION = "declics-v2";
 const ASSETS = [
   "./",
   "index.html",
