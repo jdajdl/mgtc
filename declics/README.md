@@ -4,6 +4,8 @@ Application installable (PWA) pour les formateurs : 22 ice-breakers, énergisant
 
 Adresse : `<site Pages>/declics/`. Sur téléphone, ouvrir l'adresse puis « Ajouter à l'écran d'accueil ».
 
+Pensée pour des sessions de 10 à 12 stagiaires maximum : toutes les activités fonctionnent jusqu'à 12 personnes.
+
 ## Fichiers
 - `index.html`, `app.css`, `app.js` : l'application (aucune dépendance externe)
 - `manifest.webmanifest` : nom, icônes, mode plein écran
