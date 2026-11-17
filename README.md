@@ -10,6 +10,7 @@ Site statique (GitHub Pages) qui organise le rallye : rotation des équipes, fic
 - `poste.html?j=1&p=3` : fiche d'un poste (lien Moodle, chronomètre, rappels sécurité)
 - `scores.html` : scores par équipe, enregistrés uniquement dans le navigateur de l'animateur, export CSV, mode projection
 - `qr.html` : QR codes imprimables, un par poste
+- `declics/` : « Boîte à déclics », application installable (PWA) d'ice-breakers et de consignes pour les formateurs, utilisable hors-ligne. Voir `declics/README.md`
 
 ## Configuration
 Tout se règle dans `js/config.js` : adresse de Moodle (`moodleBase`), lien Moodle de chaque poste (`moodle`), durées, barème provisoire, consignes de sécurité.
